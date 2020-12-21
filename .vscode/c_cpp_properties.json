@@ -1,0 +1,26 @@
+{
+    "configurations": [
+        {
+            "name": "Win32",
+            "includePath": [
+                "C:\\Users\\admin\\AppData\\Local\\Arduino15\\packages\\LinkIt\\tools\\**",
+                "C:\\Users\\admin\\Documents\\Arduino\\libraries\\**",
+                "D:\\Program Files (x86)\\Arduino\\libraries\\**",
+                "C:\\Users\\admin\\AppData\\Local\\Arduino15\\packages\\LinkIt\\hardware\\linkit_rtos\\0.10.21\\**",
+                "C:\\Users\\admin\\AppData\\Local\\Arduino15\\packages\\arduino\\tools\\arm-none-eabi-gcc\\4.8.3-2014q1\\**",
+                "C:\\Users\\admin\\Documents\\ArduinoFiles\\include_files\\**",
+                "${workspaceRoot}"
+            ],
+            "forcedInclude": [
+                "C:\\Users\\admin\\AppData\\Local\\Arduino15\\packages\\LinkIt\\hardware\\linkit_rtos\\0.10.21\\cores\\arduino\\Arduino.h"
+            ],
+            "defines": [
+                "USBCON"
+            ],
+            "intelliSenseMode": "msvc-x64",
+            "cStandard": "c17",
+            "cppStandard": "c++17"
+        }
+    ],
+    "version": 4
+}
