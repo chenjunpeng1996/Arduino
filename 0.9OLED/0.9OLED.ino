@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-12-21 11:28:49
- * @LastEditTime: 2020-12-21 11:37:34
+ * @LastEditTime: 2020-12-21 11:42:36
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: \Arduino\0.9OLED\0.9OLED.ino
@@ -26,4 +26,5 @@ void loop(void) {
   u8g2.sendBuffer();					// transfer internal memory to the display
   delay(1000);
   u8g2.sendBuffer();
+  ///sadasd
 }
