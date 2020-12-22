@@ -41,6 +41,13 @@ class U8G2 : public Print
     u8x8_t *getU8x8(void) { return u8g2_GetU8x8(&u8g2); }
     u8g2_t *getU8g2(void) { return &u8g2; }
     
+    /**
+     * @brief 向显示控制器发送特殊命令。这些命令在显示控制器的数据表中指定。U8g2仅提供了一个接口（这些命令的功能不支持）。信息以字节序列的形式传输。每个字节都有特殊含义：命令字节（c）：控制器命令。通常，此字节将激活或禁用显示控制器中的功能。参数（a）：某些命令需要其他信息。然后，命令字节需要一定数量或参数。像素数据（d）：指示显示控制器将字节解释为像素数据，必须将其写入显示存储器。在某些情况下，像素数据也需要特殊的命令。
+     * 
+     * @param fmt 产生序列的（字符串）c，a或d。
+     * @param ... 字节序列，以逗号分隔，fmt字符串中每个字符一个字节。字节将在fmt字符串的相同位置相应解释为char 。
+     * @return ** void 
+     */
     void sendF(const char *fmt, ...) 
       { va_list va; va_start(va, fmt); u8x8_cad_vsendf(u8g2_GetU8x8(&u8g2), fmt, va); va_end(va); }
 
@@ -50,8 +57,18 @@ class U8G2 : public Print
 
     void setI2CAddress(uint8_t adr) { u8g2_SetI2CAddress(&u8g2, adr); }
     
-    
+    /**
+     * @brief 激活对Arduinoprint功能的UTF8支持。激活后，将unicode符号用于传递给print函数的字符串 。通常在以下情况下调用此函数begin()：
+     * 
+     * @return ** void 
+     */
     void enableUTF8Print(void) { cpp_next_cb = u8x8_utf8_next; }
+
+    /**
+     * @brief 禁用对Arduinoprint功能的UTF8支持。这也是默认设置。
+     * 
+     * @return ** void 
+     */
     void disableUTF8Print(void) { cpp_next_cb = u8x8_ascii_next; }
 
     /* u8x8 interface */
@@ -85,11 +102,27 @@ class U8G2 : public Print
     /* return 0 for no event or U8X8_MSG_GPIO_MENU_SELECT, */
     /* U8X8_MSG_GPIO_MENU_NEXT, U8X8_MSG_GPIO_MENU_PREV, */
     /* U8X8_MSG_GPIO_MENU_HOME */
+    
+    /**
+     * @brief 返回按键事件。必须使用begin功能设置最多六个引脚的引脚号。
+     * 
+     * @return ** uint8_t U8X8_MSG_GPIO_MENU_SELECT,U8X8_MSG_GPIO_MENU_NEXT,U8X8_MSG_GPIO_MENU_PREV,U8X8_MSG_GPIO_MENU_HOME,U8X8_MSG_GPIO_MENU_UP,U8X8_MSG_GPIO_MENU_DOWN,如果没有按钮被按下或按键事件，则返回0。
+     */
     uint8_t getMenuEvent(void) { return u8x8_GetMenuEvent(u8g2_GetU8x8(&u8g2)); }
 
+    /**
+     * @brief 重置和配置显示。在任何其他过程在显示屏上绘制内容之前，必须先调用此过程。此过程使显示屏处于省电模式。为了查看屏幕上的内容，请先禁用省电模式（setPowerSave）。此过程由begin过程调用。无论是 开始还是initDisplay必须首先被调用。
+     * 
+     * @return ** void 
+     */
     void initDisplay(void) {
       u8g2_InitDisplay(&u8g2); }
       
+    /**
+     * @brief 清除内部缓冲区中“ AND”的所有像素，并清除所连接显示器上的所有像素。也从头开始调用此过程。通常，除了初始化过程以外，无需调用此函数。其他过程，例如sendBuffer和nextPage也将覆盖（并清除）显示。
+     * 
+     * @return ** void 
+     */
     void clearDisplay(void) {
       u8g2_ClearDisplay(&u8g2); }
       
@@ -145,16 +178,49 @@ class U8G2 : public Print
       u8g2_SetClipWindow(&u8g2, clip_x0, clip_y0, clip_x1, clip_y1 ); }
 #endif /* U8G2_WITH_CLIP_WINDOW_SUPPORT */
       
-      
+    /**
+     * @brief 返回显示器的高度。
+     * 
+     * @return ** u8g2_uint_t 显示器的高度。
+     */
     u8g2_uint_t getDisplayHeight(void) { return u8g2_GetDisplayHeight(&u8g2); }
+
+    /**
+     * @brief 返回显示的宽度。
+     * 
+     * @return ** u8g2_uint_t 显示的宽度。
+     */
     u8g2_uint_t getDisplayWidth(void) { return u8g2_GetDisplayWidth(&u8g2); }
 
     
     /* u8g2_buffer.c */
+
+    /**
+     * @brief 将存储器帧缓冲区的内容发送到显示器。使用 clearBuffer清除缓冲区，使用draw函数将某些内容绘制到帧缓冲区中。仅当微控制器RAM中的全帧缓冲区（带缓冲区选项“ f”的构造函数，请参见此处）时，此过程才有用。此过程还将向电子纸/电子墨水设备发送刷新消息（refreshDisplay）。：实际上，此过程会将当前页面发送到显示器。这意味着，内部像素缓冲区的内容 将放置在当前页面position所给定的图块行中。这意味着该过程可用于页面设备（缓冲区选项为“ 1”或“ 2”的构造函数）上的部分更新。但是，这仅适用于LCD。由于显示控制器中的缓冲开关，因此它不适用于大多数电子纸/电子墨水设备。结论：仅将此命令与完整的缓冲区构造函数一起使用。然后它将与所有LCD和电子纸/电子墨水设备一起使用。
+     * 
+     * @return ** void 
+     */
     void sendBuffer(void) { u8g2_SendBuffer(&u8g2); }
+
+    /**
+     * @brief 清除内存帧缓冲区中的所有像素。使用 sendBuffer将清除的帧缓冲区传输到显示器。在大多数情况下，此过程仅对微控制器RAM中的全帧缓冲区（带有缓冲区选项“ f”的构造函数，请参见此处）有用。此过程还将向电子纸/电子墨水设备发送刷新消息（refreshDisplay）。
+     * 
+     * @return ** void 
+     */
     void clearBuffer(void) { u8g2_ClearBuffer(&u8g2); }    
     
+    /**
+     * @brief 该命令是（图片）循环的一部分，该循环呈现显示内容。该命令必须与nextPage一起使用。有一些限制：执行此循环时请勿更改内容。始终重画所有内容。仅重绘部分内容是不可能的。与RAM中的全帧缓冲区相比，优点是RAM消耗更少，请参见 sendBuffer。
+     * 
+     * @return ** void 
+     */
     void firstPage(void) { u8g2_FirstPage(&u8g2); }
+
+    /**
+     * @brief 该命令是（图片）循环的一部分，该循环呈现显示内容。此命令必须与firstPage一起使用。有一些限制：执行此循环时请勿更改内容。始终重画所有内容。只能重画部分内容。与RAM中的全帧缓冲区相比，优点是RAM消耗更少，请参见 sendBuffer。该过程将在循环完成后（即在返回0之前）向电子纸/电子墨水设备发送刷新消息（refreshDisplay）。
+     * 
+     * @return ** uint8_t 0，一旦循环完成（所有数据都传输到显示器）。
+     */
     uint8_t nextPage(void) { return u8g2_NextPage(&u8g2); }
     
     #ifdef U8G2_USE_DYNAMIC_ALLOC
@@ -184,40 +250,194 @@ class U8G2 : public Print
     /* clib/u8g2.hvline.c */
     void setDrawColor(uint8_t color_index) { u8g2_SetDrawColor(&u8g2, color_index); }
     uint8_t getDrawColor(void) { return u8g2_GetDrawColor(&u8g2); }
+
+    /**
+     * @brief 在指定的x / y位置绘制一个像素。位置（0,0）在显示屏的左上角。该位置可能在显示边界之外。此过程使用当前的颜色索引绘制像素。颜色索引0将清除一个像素，颜色索引1将设置一个像素。
+     * 
+     * @param x 像素点的X位置。
+     * @param y 像素点的Y位置。
+     * @return ** void 
+     */
     void drawPixel(u8g2_uint_t x, u8g2_uint_t y) { u8g2_DrawPixel(&u8g2, x, y); }
+
+    /**
+     * @brief 从x / y位置（左边缘）开始绘制一条水平线。线的宽度（长度）是w像素。线的一部分可以在显示边界之外。此过程使用当前的颜色索引画线。颜色索引0将清除一个像素，颜色索引1将设置一个像素。
+     * 
+     * @param x 左边X位置。
+     * @param y 左边Y位置。
+     * @param w 水平线的长度。
+     * @return ** void 
+     */
     void drawHLine(u8g2_uint_t x, u8g2_uint_t y, u8g2_uint_t w) { u8g2_DrawHLine(&u8g2, x, y, w); }
+
+    /**
+     * @brief 从x / y位置（上端）开始绘制一条垂直线。线条的高度（长度）是h像素。线的一部分可以在显示边界之外。此过程使用当前的颜色索引画线。颜色索引0将清除一个像素，颜色索引1将设置一个像素。
+     * 
+     * @param x 线的上端X位置。
+     * @param y 线的上端y位置。
+     * @param h 垂直线的长度。
+     * @return ** void 
+     */
     void drawVLine(u8g2_uint_t x, u8g2_uint_t y, u8g2_uint_t h) { u8g2_DrawVLine(&u8g2, x, y, h); }
     void drawHVLine(u8g2_uint_t x, u8g2_uint_t y, u8g2_uint_t len, uint8_t dir) {
       u8g2_DrawHVLine(&u8g2, x, y, len, dir); }
     
     /* u8g2_box.c */
+
+    /**
+     * @brief 从x / y位置（左上边缘）开始绘制一个框（空框）。盒子有宽度w和高度h。框架的某些部分可以在显示边界之外。此过程将使用当前颜色（setDrawColor）绘制框。对于单色显示器，颜色索引0将清除一个像素，颜色索引1将设置一个像素。
+     * 
+     * @param x 左上边缘的X位置。
+     * @param y 左上边缘的Y位置。
+     * @param w 框架的宽度。
+     * @param h 框架的高度。
+     * @return ** void 
+     */
     void drawFrame(u8g2_uint_t x, u8g2_uint_t y, u8g2_uint_t w, u8g2_uint_t h) { u8g2_DrawFrame(&u8g2, x, y, w, h); }
     void drawRFrame(u8g2_uint_t x, u8g2_uint_t y, u8g2_uint_t w, u8g2_uint_t h, u8g2_uint_t r) { u8g2_DrawRFrame(&u8g2, x, y, w, h,r); }
+
+    /**
+     * @brief 从x / y位置（左上边缘）开始绘制一个框（填充的框）。盒子有宽度w和高度h。框的某些部分可以在显示边界之外。此过程将使用当前颜色（setDrawColor）绘制框。对于单色显示器，颜色索引0将清除一个像素，颜色索引1将设置一个像素。
+     * 
+     * @param x 左上边缘的X位置。
+     * @param y 左上边缘的Y位置。
+     * @param w 盒子的宽度。
+     * @param h 盒子的高度。
+     * @return ** void 
+     */
     void drawBox(u8g2_uint_t x, u8g2_uint_t y, u8g2_uint_t w, u8g2_uint_t h) { u8g2_DrawBox(&u8g2, x, y, w, h); }
+
+    /**
+     * @brief 绘制一个从x / y位置（左上边缘）开始具有圆形边缘的框/框架。框架有widthw和height h。框的某些部分可以在显示边界之外。边缘具有半径r。要求w >= 2*(r+1)和h >= 2*(r+1)。不检查此条件。如果w或h小于，则行为未定义2*(r+1)。此过程使用当前的颜色索引绘制框。对于单色显示器，颜色索引0将清除一个像素，颜色索引1将设置一个像素。
+     * 
+     * @param x 左上边缘的X位置。
+     * @param y 左上边缘的Y位置。
+     * @param w 框架的宽度。
+     * @param h 框架的高度。
+     * @param r 四个角的半径。
+     * @return ** void 
+     */
     void drawRBox(u8g2_uint_t x, u8g2_uint_t y, u8g2_uint_t w, u8g2_uint_t h, u8g2_uint_t r) { u8g2_DrawRBox(&u8g2, x, y, w, h,r); }
     
     /* u8g2_circle.c */
+
+    /**
+     * @brief rad在位置绘制一个半径为rad的空心圆(x0, y0)。圆的直径为2*rad+1。根据opt，可以仅绘制圆的某些部分。对于可能的值opt有：U8G2_DRAW_UPPER_RIGHT， U8G2_DRAW_UPPER_LEFT，U8G2_DRAW_LOWER_LEFT， U8G2_DRAW_LOWER_RIGHT，U8G2_DRAW_ALL。这些值可以与|运算符组合。此过程将使用当前颜色（setDrawColor）进行绘制。
+     * 
+     * @param x0 空心圆心的位置横坐标。
+     * @param y0 空心圆心的位置纵坐标。
+     * @param rad 定义圆的大小：Radus = rad。圆的半径
+     * @param opt U8G2_DRAW_UPPER_RIGHT,U8G2_DRAW_UPPER_LEFT,U8G2_DRAW_LOWER_LEFT,U8G2_DRAW_LOWER_RIGHT,U8G2_DRAW_ALL
+     * @return ** void 
+     */
     void drawCircle(u8g2_uint_t x0, u8g2_uint_t y0, u8g2_uint_t rad, uint8_t opt = U8G2_DRAW_ALL) { u8g2_DrawCircle(&u8g2, x0, y0, rad, opt); }
-    void drawDisc(u8g2_uint_t x0, u8g2_uint_t y0, u8g2_uint_t rad, uint8_t opt = U8G2_DRAW_ALL) { u8g2_DrawDisc(&u8g2, x0, y0, rad, opt); }     
+
+    /**
+     * @brief rad在位置绘制一个半径为rad的实心圆(x0, y0)。圆的直径为2*rad+1。根据opt，可能只绘制光盘的某些部分。对于可能的值opt有：U8G2_DRAW_UPPER_RIGHT， U8G2_DRAW_UPPER_LEFT，U8G2_DRAW_LOWER_LEFT， U8G2_DRAW_LOWER_RIGHT，U8G2_DRAW_ALL。这些值可以与|运算符组合。此过程将使用当前颜色（setDrawColor）进行绘制。
+     * 
+     * @param x0 实心圆心的位置横坐标。
+     * @param y0 实心圆心的位置纵坐标。
+     * @param rad 定义圆的大小：Radus = rad。圆的半径
+     * @param opt U8G2_DRAW_UPPER_RIGHT,U8G2_DRAW_UPPER_LEFT,U8G2_DRAW_LOWER_LEFT,U8G2_DRAW_LOWER_RIGHT,U8G2_DRAW_ALL
+     * @return ** void 
+     */
+    void drawDisc(u8g2_uint_t x0, u8g2_uint_t y0, u8g2_uint_t rad, uint8_t opt = U8G2_DRAW_ALL) { u8g2_DrawDisc(&u8g2, x0, y0, rad, opt); }
+    
+    /**
+     * @brief 在处画出带有radusrx和“ ry”的椭圆(x0, y0)。 rx*ry在u8g2的8位模式下必须小于512。根据opt，可能只绘制光盘的某些部分。对于可能的值opt有：U8G_DRAW_UPPER_RIGHT，U8G_DRAW_UPPER_LEFT，U8G_DRAW_LOWER_LEFT，U8G_DRAW_LOWER_RIGHT，U8G_DRAW_ALL。这些值可以与|运算符组合。直径是半径的两倍加一。
+     * 
+     * @param x0 空心椭圆的中心位置横坐标。
+     * @param y0 空心椭圆的中心位置纵坐标。
+     * @param rx 定义空心椭圆的半径宽。
+     * @param ry 定义空心椭圆的半径高。
+     * @param opt U8G2_DRAW_UPPER_RIGHT,U8G2_DRAW_UPPER_LEFT,U8G2_DRAW_LOWER_LEFT,U8G2_DRAW_LOWER_RIGHT,U8G2_DRAW_ALL
+     * @return ** void 
+     */
     void drawEllipse(u8g2_uint_t x0, u8g2_uint_t y0, u8g2_uint_t rx, u8g2_uint_t ry, uint8_t opt = U8G2_DRAW_ALL) { u8g2_DrawEllipse(&u8g2, x0, y0, rx, ry, opt); }
+
+    /**
+     * @brief rx在位置绘制一个半径为rad且为ry的填充椭圆(x0, y0)。 rx*ry在u8g2的8位模式下必须小于512。取决于opt，只能绘制光盘的某些部分。的可能值opt是：U8G_DRAW_UPPER_RIGHT，U8G_DRAW_UPPER_LEFT，U8G_DRAW_LOWER_LEFT，U8G_DRAW_LOWER_RIGHT，U8G_DRAW_ALL。这些值可以与组合的|运算符。
+     * 
+     * @param x0 实心椭圆的中心位置横坐标。
+     * @param y0 实心椭圆的中心位置纵坐标。
+     * @param rx 定义实心椭圆的半径宽。
+     * @param ry 定义实心椭圆的半径高。
+     * @param opt U8G2_DRAW_UPPER_RIGHT,U8G2_DRAW_UPPER_LEFT,U8G2_DRAW_LOWER_LEFT,U8G2_DRAW_LOWER_RIGHT,U8G2_DRAW_ALL
+     * @return ** void 
+     */
     void drawFilledEllipse(u8g2_uint_t x0, u8g2_uint_t y0, u8g2_uint_t rx, u8g2_uint_t ry, uint8_t opt = U8G2_DRAW_ALL) { u8g2_DrawFilledEllipse(&u8g2, x0, y0, rx, ry, opt); }    
 
     /* u8g2_line.c */
+
+    /**
+     * @brief 在两点之间画一条线。此过程将使用当前颜色（setDrawColor）。
+     * 
+     * @param x1 第一个点的X位置。
+     * @param y1 第一个点的Y位置。
+     * @param x2 第二个点的X位置。
+     * @param y2 第二个点的Y位置。
+     * @return ** void 
+     */
     void drawLine(u8g2_uint_t x1, u8g2_uint_t y1, u8g2_uint_t x2, u8g2_uint_t y2) 
       { u8g2_DrawLine(&u8g2, x1, y1, x2, y2); }
 
     /* u8g2_bitmap.c */
     void setBitmapMode(uint8_t is_transparent) 
       { u8g2_SetBitmapMode(&u8g2, is_transparent); }
+
+    /**
+     * @brief 在指定的x / y位置（位图的左上角）绘制一个位图。位图的某些部分可能不在显示边界之内。位图由数组指定bitmap。清除位表示：不要绘制像素。数组内部的置位意味着：用当前颜色索引写入像素。对于单色显示器，颜色索引0将清除像素（以纯模式显示），颜色索引1将设置像素。
+     * 
+     * @param x X位置（位图的左侧位置）。
+     * @param y Y位置（位图的上部位置）。
+     * @param cnt 位图在水平方向上的字节数。位图的宽度为cnt*8。
+     * @param h 位图的高度。
+     * @param bitmap 位图数组
+     * @return ** void 
+     */
     void drawBitmap(u8g2_uint_t x, u8g2_uint_t y, u8g2_uint_t cnt, u8g2_uint_t h, const uint8_t *bitmap)
       { u8g2_DrawBitmap(&u8g2, x, y, cnt, h, bitmap); }
+
+    /**
+     * @brief 绘制XBM位图。位置（x，y）是位图的左上角。XBM包含单色的1位位图。当前的颜色索引用于绘制（请参阅setColorIndex）像素值1。U8g2的2.15.x版为位图引入了纯色和透明模式。默认情况下，drawXBM将绘制实体位图。这与以前的版本不同：使用setBitmapMode（1）切换到以前的行为。此过程的XBMP版本期望位图位于PROGMEM区域中（仅AVR）。许多工具（包括GIMP）都可以将位图另存为XBM。
+     * 
+     * @param x 位图左上角X位置。
+     * @param y 位图左上角y位置。
+     * @param w 位图的宽度。
+     * @param h 位图的高度。
+     * @param bitmap 指向位图的开始的指针(数组)。
+     * @return ** void 
+     */
     void drawXBM(u8g2_uint_t x, u8g2_uint_t y, u8g2_uint_t w, u8g2_uint_t h, const uint8_t *bitmap)
       { u8g2_DrawXBM(&u8g2, x, y, w, h, bitmap); }
+    
+    /**
+     * @brief 绘制XBM位图。位置（x，y）是位图的左上角。XBM包含单色的1位位图。当前的颜色索引用于绘制（请参阅setColorIndex）像素值1。U8g2的2.15.x版为位图引入了纯色和透明模式。默认情况下，drawXBM将绘制实体位图。这与以前的版本不同：使用setBitmapMode（1）切换到以前的行为。此过程的XBMP版本期望位图位于PROGMEM区域中（仅AVR）。许多工具（包括GIMP）都可以将位图另存为XBM。
+     * 
+     * @param x 位图左上角X位置。
+     * @param y 位图左上角y位置。
+     * @param w 位图的宽度。
+     * @param h 位图的高度。
+     * @param bitmap 指向位图的开始的指针(数组)。
+     * @return ** void 
+     */
     void drawXBMP(u8g2_uint_t x, u8g2_uint_t y, u8g2_uint_t w, u8g2_uint_t h, const uint8_t *bitmap)
       { u8g2_DrawXBMP(&u8g2, x, y, w, h, bitmap); }
     
     
     /* u8g2_polygon.c */
+
+    /**
+     * @brief 绘制一个三角形（实心多边形）。参数为16位，并且多边形被裁剪​​为显示的大小。绘制了多个多边形，以便它们完全匹配而没有重叠：绘制多边形的左侧，不绘制右侧。上侧只有在平的情况下才可以绘制。
+     * 
+     * @param x0 X位置点0。
+     * @param y0 Y位置点0。
+     * @param x1 X位置点1。
+     * @param y1 Y位置点1。
+     * @param x2 X位置点2。
+     * @param y2 Y位置点2。
+     * @return ** void 
+     */
     void drawTriangle(int16_t x0, int16_t y0, int16_t x1, int16_t y1, int16_t x2, int16_t y2) 
       { u8g2_DrawTriangle(&u8g2, x0, y0, x1, y1, x2, y2); }
       
@@ -225,12 +445,28 @@ class U8G2 : public Print
     void drawLog(u8g2_uint_t x, u8g2_uint_t y, class U8G2LOG &u8g2log);
     
     /* u8g2_font.c */
-
+    /**
+     * @brief 设置字体
+     * 
+     * @param font 所有字体请查询:https://github.com/olikraus/u8g2/wiki/fntlistall
+     * @return ** void 
+     */
     void setFont(const uint8_t  *font) {u8g2_SetFont(&u8g2, font); }
     void setFontMode(uint8_t  is_transparent) {u8g2_SetFontMode(&u8g2, is_transparent); }
     void setFontDirection(uint8_t dir) {u8g2_SetFontDirection(&u8g2, dir); }
 
+    /**
+     * @brief 返回字形在基线（上升）上方的参考高度。此值取决于当前参考高度（请参见setFontRefHeightAll）。
+     * 
+     * @return ** int8_t 当前字体的上升
+     */
     int8_t getAscent(void) { return u8g2_GetAscent(&u8g2); }
+
+    /**
+     * @brief 返回字形在基线（下降）以下的参考高度。对于大多数字体，此值将为负。此值取决于当前参考高度（请参见setFontRefHeightAll）。
+     * 
+     * @return ** int8_t 当前字体的下降。
+     */
     int8_t getDescent(void) { return u8g2_GetDescent(&u8g2); }
     
     void setFontPosBaseline(void) { u8g2_SetFontPosBaseline(&u8g2); }
@@ -250,14 +486,52 @@ u8g2_uint_t u8g2_GetStrWidth(u8g2_t *u8g2, const char *s);
 u8g2_uint_t u8g2_GetUTF8Width(u8g2_t *u8g2, const char *str);
 */
     
-    u8g2_uint_t drawGlyph(u8g2_uint_t x, u8g2_uint_t y, uint16_t encoding) { return u8g2_DrawGlyph(&u8g2, x, y, encoding); }    
+    /**
+     * @brief 绘制一个字符。字符放置在指定的像素位置x和y。U8g2支持Unicode字符范围的低16位（平面0 /基本多语言平面）：encoding可以是0到65535之间的任何值。仅当活动字体中存在编码时，才可以绘制字形。
+     * 
+     * @param x 字符左下角在显示屏上横坐标的位置。
+     * @param y 字符左下角在显示屏上纵坐标的位置。
+     * @param encoding 字符的Unicode值。
+     * @return ** u8g2_uint_t 
+     */
+    u8g2_uint_t drawGlyph(u8g2_uint_t x, u8g2_uint_t y, uint16_t encoding) { return u8g2_DrawGlyph(&u8g2, x, y, encoding); } 
+    
+    /**
+     * @brief 画一条线。第一个字符被放置在位置x和y。在显示屏上绘制字符串之前，请使用setFont分配字体。要绘制编码为127到255的字符，请使用C / C ++ / Arduino转义序列“ \ xab”（十六进制值ab）或“ \ xyz”（八进制值xyz）。此函数不能绘制任何编码大于或等于256的字形。使用drawUTF8 或drawGlyph访问编码大于或等于256的字形。
+     * 
+     * @param x 第一个字符的左下角在显示屏上的x位置。
+     * @param y 第一个字符的左下角在显示屏上的y位置。
+     * @param s 字符串
+     * @return ** u8g2_uint_t 字符串的宽度
+     */
     u8g2_uint_t drawStr(u8g2_uint_t x, u8g2_uint_t y, const char *s) { return u8g2_DrawStr(&u8g2, x, y, s); }
+
+    /**
+     * @brief 绘制一个编码为UTF-8的字符串。使用此功能有两个先决条件：（A）C / C ++ / Arduino编译器必须支持UTF-8编码（这是gnu编译器的默认设置，也用于大多数Arduino板），以及（B）代码编辑器/ IDE必须支持C / C ++ / Arduino代码并将其存储为UTF-8（对于Arduino IDE为true）。如果满足这些条件，则可以直接在字符串中使用代码值大于127的字符（当然，该字符必须存在于字体文件中，另请参见setFont）。优点：不需要转义码，并且源代码更具可读性。可以将字形复制并从“字符集”工具粘贴到编辑器中。缺点：代码的可移植性较差，并且strlen函数不会返回可见字符的数量。使用 getUTF8Len而不是strlen。
+     * 
+     * @param x 字符左下角在显示屏上横坐标的位置。
+     * @param y 字符左下角在显示屏上纵坐标的位置。
+     * @param s UTF-8编码的字符串
+     * @return ** u8g2_uint_t 字符串的宽度
+     */
     u8g2_uint_t drawUTF8(u8g2_uint_t x, u8g2_uint_t y, const char *s) { return u8g2_DrawUTF8(&u8g2, x, y, s); }
     u8g2_uint_t drawExtUTF8(u8g2_uint_t x, u8g2_uint_t y, uint8_t to_left, const uint16_t *kerning_table, const char *s) 
       { return u8g2_DrawExtUTF8(&u8g2, x, y, to_left, kerning_table, s); }
 
-      
+    /**
+     * @brief 返回字符串的像素宽度。
+     * 
+     * @param s 字符串
+     * @return ** u8g2_uint_t 如果使用当前字体（setFont）绘制，则字符串的宽度。
+     */
     u8g2_uint_t getStrWidth(const char *s) { return u8g2_GetStrWidth(&u8g2, s); }
+
+    /**
+     * @brief 返回UTF-8编码的字符串的像素宽度。
+     * 
+     * @param s UTF-8编码的字符串。
+     * @return ** u8g2_uint_t 如果使用当前字体（setFont）绘制，则字符串的宽度。
+     */
     u8g2_uint_t getUTF8Width(const char *s) { return u8g2_GetUTF8Width(&u8g2, s); }
     
     // not required any more, enable UTF8 for print 
@@ -337,6 +611,12 @@ uint8_t u8g2_UserInterfaceInputValue(u8g2_t *u8g2, const char *title, const char
     
 
      /* LiquidCrystal compatible functions */
+
+     /**
+      * @brief 将打印功能光标置于左上角。如果字形引用不在字符顶部，则此命令后文本的某些部分可能不可见。
+      * 
+      * @return ** void 
+      */
     void home(void) { tx = 0; ty = 0;  u8x8_utf8_init(u8g2_GetU8x8(&u8g2)); }
     void clear(void) { home(); clearDisplay(); clearBuffer();  }
     void noDisplay(void) { u8g2_SetPowerSave(&u8g2, 1); }
@@ -350,7 +630,19 @@ uint8_t u8g2_UserInterfaceInputValue(u8g2_t *u8g2, const char *title, const char
     uint8_t getColorIndex(void) { return u8g2_GetDrawColor(&u8g2); }
     int8_t getFontAscent(void) { return u8g2_GetAscent(&u8g2); }
     int8_t getFontDescent(void) { return u8g2_GetDescent(&u8g2); }
+    
+    /**
+     * @brief 每个字形都存储为位图。这将返回字体中最大位图的高度。
+     * 
+     * @return ** int8_t 字体中任何字形的最大高度。
+     */
     int8_t getMaxCharHeight(void) { return u8g2_GetMaxCharHeight(&u8g2); }
+
+    /**
+     * @brief 每个字形都存储为位图。这将返回字体中最大位图的宽度。
+     * 
+     * @return ** int8_t 字体中任何字形的最大宽度。
+     */
     int8_t getMaxCharWidth(void) { return u8g2_GetMaxCharWidth(&u8g2); }
     u8g2_uint_t getHeight() { return u8g2_GetDisplayHeight(&u8g2); }
     u8g2_uint_t getWidth() { return u8g2_GetDisplayWidth(&u8g2); }
@@ -358,7 +650,10 @@ uint8_t u8g2_UserInterfaceInputValue(u8g2_t *u8g2, const char *title, const char
 
 void u8g2_print_callback(const char *s);  /* U8g2lib.cpp */
 
-
+/**
+ * @brief 这是Arduino print（）函数。请在此处和此处在Arduino网页上查看说明。此过程将使用setFont设置的当前字体将文本写入当前光标位置。光标位置可以通过setCursor设置。可以通过enableUTF8Print启用对UTF-8的支持。此函数可以打印变量值并支持F（）宏。使用print(u8x8_u8toa(value, digits))或print(u8x8_u16toa(value, digits))打印宽度恒定的数字（如果需要，数字以0开头）。
+ * 
+ */
 class U8G2LOG : public Print
 {
   
