@@ -4,7 +4,7 @@
             "name": "Win32",
             "includePath":[
                 //文件夹项目路径
-                "${workspaceFolder}/src/**",
+                //"${workspaceFolder}/src/**",
                 "${workspaceFolder}/include_files/**",
                 //Windows 默认头文件位置
                 "C:\\Users\\admin\\AppData\\Local\\Arduino15\\packages\\LinkIt\\tools\\**",
@@ -14,18 +14,13 @@
                 "C:\\Users\\admin\\Documents\\ArduinoFiles\\include_files\\**",
                 //Windows Arduino程序安装目录
                 "D:\\Program Files (x86)\\Arduino\\libraries\\**",
-                //Mac 头文件库位置
-                //"/Users/langhun/Documents/Arduino/libraries/**",
-                //"/Users/langhun/Library/Arduino15/packages/LinkIt/**",
-                //"/Applications/Arduino.app/Contents/Java/libraries",
-                //"/Applications/Arduino.app/Contents/Java/hardware/tools/avr/avr/include",
-                //"/Applications/Arduino.app/Contents/Java/hardware/arduino/avr/variants/standard",
                 //Vscode 环境变量位置
                 "${workspaceRoot}"
 
             ],
             "forcedInclude": [
-                "C:\\Users\\admin\\AppData\\Local\\Arduino15\\packages\\LinkIt\\hardware\\linkit_rtos\\0.10.21\\cores\\arduino\\Arduino.h"
+                "C:\\Users\\admin\\AppData\\Local\\Arduino15\\packages\\LinkIt\\hardware\\linkit_rtos\\0.10.21\\cores\\arduino\\Arduino.h",
+                "/Users/langhun/Documents/Arduino/hardware/arduino/avr/firmwares/wifishield/wifiHD/src/SOFTWARE_FRAMEWORK/BOARDS/ARDUINO/arduino.h"
             ],
             "defines": [
                 "USBCON"
@@ -33,7 +28,31 @@
             "intelliSenseMode": "msvc-x64",
             "cStandard": "c17",
             "cppStandard": "c++17"
+        },
+        {
+            "name": "Mac",
+            "includePath": [
+                //"${workspaceFolder}/src/**",
+                "${workspaceFolder}/include_files/**",
+                //"/Users/langhun/Documents/Arduino/libraries/**",
+                //"/Users/langhun/Documents/Arduino/libraries/u8g2-master/src/clib/**",
+                "/Applications/Arduino.app/Contents/Java/libraries",
+                "/Applications/Arduino.app/Contents/Java/hardware/tools/avr/avr/include",
+                "/Applications/Arduino.app/Contents/Java/hardware/arduino/avr/variants/standard",
+                //"/Users/langhun/Documents/Arduino/hardware/arduino/avr/firmwares/wifishield/wifiHD/src/SOFTWARE_FRAMEWORK/BOARDS/ARDUINO/**",
+                "${workspaceRoot}"
+            ],
+            "forcedInclude": [],
+            "macFrameworkPath": [
+                "/System/Library/Frameworks",
+                "/Library/Frameworks"
+            ],
+            "intelliSenseMode": "clang-x64",
+            "compilerPath": "/usr/bin/clang",
+            "cStandard": "c11",
+            "cppStandard": "c++17"
         }
     ],
+        
     "version": 4
 }

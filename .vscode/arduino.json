@@ -1,6 +1,6 @@
 {
     "board": "LinkIt:linkit_rtos:linkit_7697",
     "programmer": "Parallel Programmer",
-    "sketch": "strat\\start.ino",
+    "sketch": "strat/start.ino",
     "port": "COM7"
 }
