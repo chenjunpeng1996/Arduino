@@ -2,7 +2,7 @@
     "configurations": [
         {
             "name": "Win32",
-            "includePath": [
+            "includePath":[
                 //文件夹项目路径
                 "${workspaceFolder}/src/**",
                 "${workspaceFolder}/include_files/**",
@@ -14,19 +14,18 @@
                 "C:\\Users\\admin\\Documents\\ArduinoFiles\\include_files\\**",
                 //Windows Arduino程序安装目录
                 "D:\\Program Files (x86)\\Arduino\\libraries\\**",
-                "D:\\Program Files (x86)\\Arduino/Arduino.app/Contents/Java/libraries/**",
                 //Mac 头文件库位置
-                "/Users/langhun/Documents/Arduino/libraries/**",
-                "/Users/langhun/Library/Arduino15/packages/LinkIt/**",
-                "/Applications/Arduino.app/Contents/Java/libraries",
-                "/Applications/Arduino.app/Contents/Java/hardware/tools/avr/avr/include",
-                "/Applications/Arduino.app/Contents/Java/hardware/arduino/avr/variants/standard",
+                //"/Users/langhun/Documents/Arduino/libraries/**",
+                //"/Users/langhun/Library/Arduino15/packages/LinkIt/**",
+                //"/Applications/Arduino.app/Contents/Java/libraries",
+                //"/Applications/Arduino.app/Contents/Java/hardware/tools/avr/avr/include",
+                //"/Applications/Arduino.app/Contents/Java/hardware/arduino/avr/variants/standard",
                 //Vscode 环境变量位置
-                "${workspaceRoot}",
+                "${workspaceRoot}"
+
             ],
             "forcedInclude": [
-                "C:\\Users\\admin\\AppData\\Local\\Arduino15\\packages\\LinkIt\\hardware\\linkit_rtos\\0.10.21\\cores\\arduino\\Arduino.h",
-                "/Users/langhun/Library/Arduino15/packages/LinkIt/hardware/linkit_rtos/0.10.21/cores/arduino/Arduino.h"
+                "C:\\Users\\admin\\AppData\\Local\\Arduino15\\packages\\LinkIt\\hardware\\linkit_rtos\\0.10.21\\cores\\arduino\\Arduino.h"
             ],
             "defines": [
                 "USBCON"

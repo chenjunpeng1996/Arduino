@@ -1,51 +1,60 @@
+/*
+ * @Author: your name
+ * @Date: 2020-12-21 11:47:48
+ * @LastEditTime: 2020-12-22 12:36:24
+ * @LastEditors: Please set LastEditors
+ * @Description: In User Settings Edit
+ * @FilePath: \ArduinoFiles\include_files\include.cpp
+ */
 /********************
  * 自定义头文件,防止VScode报错
  * *****************/
 #include "include.h"
 #include "arduino.h"
-
-/********************
- * 向某个引脚写布尔值
- * 参数1:引脚号(byte)
- * 参数2:布尔值(bool)
- * 注:
- * 返回值:无
- * *****************/
+ /**
+  * @brief 向某个引脚写布尔值
+  * 
+  * @param pin 引脚号(byte)
+  * @param H_L 布尔值(bool)
+  * @return ** void 
+  */
 void INCLUDE::DWrite(byte pin,bool H_L)
 {
     pinMode(pin,OUTPUT);
     digitalWrite(pin,H_L);
 }
 
-/********************
- * 向某个引脚写模拟量值
- * 参数1:引脚号(byte)
- * 参数2:模拟电压值(int)
- * 注:模拟电压值为0~255
- * 返回值:无
- * *****************/
+ /**
+  * @brief 向某个引脚写模拟量值
+  * 
+  * @param pin 引脚号(byte)
+  * @param Value 模拟电压值,范围0~255(int)
+  * @return ** void 
+  */
 void INCLUDE::AWrite(byte pin,int Value)
 {
     pinMode(pin,OUTPUT);
-    AnalogWrite(pin,Value);
+    analogWrite(pin,Value);
 }
-/********************
- * 读取某个引脚的数字量
- * 参数1:引脚号(byte)
- * 注:
- * 返回值:bool 开和关
- * *****************/
+
+ /**
+  * @brief 读取某个引脚的数字量
+  * 
+  * @param pin 引脚号(byte)
+  * @return true 引脚电压为高
+  * @return false 引脚电压为高
+  */
 bool INCLUDE::DRead(byte pin)
 {
     pinMode(pin,INPUT);
     digitalRead(pin);
 }
-/********************
- * 读取模拟输入引脚的电压值
- * 参数1:引脚号(byte)
- * 注:引脚输出0,1,2,3;四个ADC通道
- * 返回值:int 0-4095 对应0-2.5V
- * *****************/
+ /**
+  * @brief 读取模拟输入引脚的电压值
+  * 
+  * @param pin ADC通道引脚号(byte)有:0,1,2,3;四个ADC通道
+  * @return ** int 0-4095 对应0-2.5V
+  */
 int INCLUDE::ARead(byte pin)
 {
     switch (pin)

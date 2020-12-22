@@ -1,6 +1,6 @@
 {
     "board": "LinkIt:linkit_rtos:linkit_7697",
     "programmer": "Parallel Programmer",
-    "sketch": "OLED0.9/OLED0.9.ino",
+    "sketch": "strat\\start.ino",
     "port": "COM7"
 }

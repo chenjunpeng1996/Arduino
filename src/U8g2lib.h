@@ -1,44 +1,22 @@
 /*
-  
   U8g2lib.h
-  
-  C++ Arduino wrapper for the u8g2 struct and c functions for the u8g2 library
+  U8G2结构的C++ ARDUIO包装器及U8G2库的C函数
+  通用8位图形库 (https://github.com/olikraus/u8g2/)
+  版权所有（c）2016, olikraus@gmail.com
 
-  Universal 8bit Graphics Library (https://github.com/olikraus/u8g2/)
+  版权（c）以源代码和二进制形式重新分发和使用，无论是否修改，
+  如果满足以下条件，则允许：
+  *重新分发源代码必须保留上述版权声明，此列表条件和以下免责声明。
+  *二进制形式的再分配必须复制上述版权声明，此文件和/或其他文件中的条件清单和以下免责声明随分发提供的材料。
 
-  Copyright (c) 2016, olikraus@gmail.com
-  All rights reserved.
+  本软件由版权所有人和贡献者“按原样”提供，不接受任何明示或暗示的保证，包括但不限于对适销性和适合特定用途的默示保证。
+  在任何情况下，版权持有人或贡献者对任何直接、间接、偶然、特殊、惩戒性或后果性损害（包括但不限于采购替代货物或服务；
+  使用、数据或利润损失；或业务中断）概不负责，无论是在合同中还是根据任何责任理论，
+  因使用本软件而产生的严格责任或侵权行为（包括疏忽或其他），即使已告知此类损害的可能性。
 
-  Redistribution and use in source and binary forms, with or without modification, 
-  are permitted provided that the following conditions are met:
-
-  * Redistributions of source code must retain the above copyright notice, this list 
-    of conditions and the following disclaimer.
-    
-  * Redistributions in binary form must reproduce the above copyright notice, this 
-    list of conditions and the following disclaimer in the documentation and/or other 
-    materials provided with the distribution.
-
-  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND 
-  CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, 
-  INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF 
-  MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE 
-  DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR 
-  CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, 
-  SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT 
-  NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; 
-  LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER 
-  CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, 
-  STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) 
-  ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF 
-  ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.  
-
-
-  Note:
-  U8x8lib.h is included for the declaration of the helper functions in U8x8lib.cpp.
-  U8g2 class is based on the u8g2 struct from clib/u8g2.h, the U8x8 class from U8x8lib.h is not used.
-
-
+  注意:
+  U8x8lib.h包含在U8x8lib.cpp函数中声明。.
+  U8g2类基于clib/u8g2.h中的U8g2结构，不使用U8x8lib.h中的U8x8类。
 */
 
 
