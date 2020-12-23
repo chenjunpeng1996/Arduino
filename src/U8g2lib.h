@@ -53,6 +53,13 @@ class U8G2 : public Print
 
 
     uint32_t getBusClock(void) { return u8g2_GetU8x8(&u8g2)->bus_clock; }
+
+    /**
+     * @brief 仅在Arduino环境中：为I2C和SPI分配总线时钟速度（频率）。如果不调用此函数，将使用默认值。必须在第一次调用u8g2.begin（）或u8g2.initDisplay（）之前放置此命令。默认总线速度值允许可靠地使用最慢的显示器。另一方面，特定的显示器可能支持更高的总线时钟速度。例如，对于I2C，SSD1327默认为100KHz，但在许多情况下似乎支持400KHz。在当前应用中测试较高的总线时钟值是一个好主意。对于I2C，请使用“ u8g2.setBusClock（200000）;” 或“ u8g2.setBusClock（400000）;”。对于SPI，请尝试使用“ u8g2.setBusClock（1000000）;”之间的值。和“ u8g2.setBusClock（8000000）;”。 U8g2将始终为当前显示分配最佳总线时钟。但是，如果I2C总线上有多个客户端，则可能会发生，所选的I2C速度对于其他设备而言过高。在这种情况下，强制U8g2使用所有客户端可接受的速度：例如，尝试“ u8g2.setBusClock（100000）;”。应该适用于所有设备。
+     * 
+     * @param clock_speed I2C或SPI总线时钟频率（Hz）
+     * @return ** void 
+     */
     void setBusClock(uint32_t clock_speed) { u8g2_GetU8x8(&u8g2)->bus_clock = clock_speed; }
 
     void setI2CAddress(uint8_t adr) { u8g2_SetI2CAddress(&u8g2, adr); }
@@ -125,16 +132,40 @@ class U8G2 : public Print
      */
     void clearDisplay(void) {
       u8g2_ClearDisplay(&u8g2); }
-      
+    
+      /**
+       * @brief 激活（is_enable = 1）或禁用（is_enable = 0）显示器的节能模式。启用省电模式后，显示屏上将看不到任何内容。显示器RAM的内容未更改。也从头开始调用此过程。
+       * 
+       * @param is_enable 启用（1）或禁用（0）显示器的省电模式。
+       * @return ** void 
+       */
     void setPowerSave(uint8_t is_enable) {
       u8g2_SetPowerSave(&u8g2, is_enable); }
-      
+    
+    /**
+     * @brief 某些显示器支持内部帧缓冲区旋转180度。可以通过此过程控制此硬件功能。重要：更改翻转模式后，请重新绘制完整的显示。最好先清除显示内容，然后更改翻转模式，最后重新绘制内容。屏幕上任何现有内容的结果都将不确定。
+     * 
+     * @param mode 启用（1）或禁用（0）显示内容旋转180度
+     * @return ** void 
+     */
     void setFlipMode(uint8_t mode) {
       u8g2_SetFlipMode(&u8g2, mode); }
 
+    /**
+     * @brief 设置显示器的对比度或亮度（如果支持）。“值”的范围：0（无对比度）至255（最大对比度或亮度）。
+     * 
+     * @param value 对比度或亮度从0到255。
+     * @return ** void 
+     */
     void setContrast(uint8_t value) {
       u8g2_SetContrast(&u8g2, value); }
-      
+    
+    /**
+     * @brief 更改显示旋转。通常，旋转定义为U8g2构造函数的一部分。argmentu8g2_cb可以是以下值之一：
+     * 
+     * @param u8g2_cb 显示旋转参数。U8G2_R0,不旋转，横向;U8G2_R1,顺时针旋转90度;U8G2_R2,顺时针旋转180度;U8G2_R3,顺时针旋转270度;U8G2_MIRROR,无旋转，横向，显示内容已镜像（v2.6.x）;
+     * @return ** void 
+     */
     void setDisplayRotation(const u8g2_cb_t *u8g2_cb) {
       u8g2_SetDisplayRotation(&u8g2, u8g2_cb); }
       
@@ -173,7 +204,23 @@ class U8G2 : public Print
     /* u8g2  */
 
 #ifdef U8G2_WITH_CLIP_WINDOW_SUPPORT
+
+    /**
+     * @brief 删除setClipWindow的效果。图形被写入完整的显示。
+     * 
+     * @return ** void 
+     */
     void setMaxClipWindow(void) { u8g2_SetMaxClipWindow(&u8g2); }
+
+    /**
+     * @brief 将所有图形输出限制在指定范围内。范围从x0（包括）到x1（排除）以及y0（包括）到y1（排除）定义。使用setMaxClipWindow将写入的内容还原到整个窗口。
+     * 
+     * @param clip_x0 可见区域的左边缘。
+     * @param clip_y0 可见区域的上边缘。
+     * @param clip_x1 可见区域的右边缘+1。
+     * @param clip_y1 可见区域的下边缘+1。
+     * @return ** void 
+     */
     void setClipWindow(u8g2_uint_t clip_x0, u8g2_uint_t clip_y0, u8g2_uint_t clip_x1, u8g2_uint_t clip_y1) {
       u8g2_SetClipWindow(&u8g2, clip_x0, clip_y0, clip_x1, clip_y1 ); }
 #endif /* U8G2_WITH_CLIP_WINDOW_SUPPORT */
@@ -224,22 +271,87 @@ class U8G2 : public Print
     uint8_t nextPage(void) { return u8g2_NextPage(&u8g2); }
     
     #ifdef U8G2_USE_DYNAMIC_ALLOC
+
+    /**
+     * @brief 设置缓冲区起始地址。这也是当前页面最左侧图块的地址（上述存储结构中的字节0）。缓冲区的总内存大小为8 * u8g2.getBufferTileHeight（） * u8g2.getBufferTileWidth（）。也可以通过调用u8g2.getBufferSize（）来接收大小。可以使用u8g2.clearBuffer（）擦除Buffer 。
+     * 
+     * @param buf 指向内部页面缓冲区开始的指针
+     * @return ** void 
+     */
     void setBufferPtr(uint8_t *buf) { u8g2_SetBufferPtr(&u8g2, buf); }
+
+    /**
+     * @brief 返回当前显示类型所需的页面缓冲区的大小。返回值等于8 * u8g2.getBufferTileHeight（） * u8g2.getBufferTileWidth（）。
+     * 
+     * @return ** uint16_t 
+     */
     uint16_t getBufferSize() { return u8g2_GetBufferSize(&u8g2); }
     #endif
+
+    /**
+     * @brief 返回缓冲区起始地址。这也是当前页面最左侧图块的地址（上述存储结构中的字节0）。缓冲区的总内存大小为8 * u8g2.getBufferTileHeight（） * u8g2.getBufferTileWidth（）。也可以通过调用u8g2.getBufferSize（）来接收大小。可以使用u8g2.clearBuffer（）擦除缓冲区。
+     * 
+     * @return ** uint8_t* 内部页面缓冲区的地址。
+     */
     uint8_t *getBufferPtr(void) { return u8g2_GetBufferPtr(&u8g2); }
+
+    /**
+     * @brief 返回页面缓冲区的高度（以图块为单位）。一个图块的高度为8像素。
+     * 
+     * @return ** uint8_t 缓冲区的高度（以图块为单位）。
+     */
     uint8_t getBufferTileHeight(void) { return u8g2_GetBufferTileHeight(&u8g2); }
+
+    /**
+     * @brief 以分片形式返回页面缓冲区的宽度（一个分片的宽度为8像素）。
+     * 
+     * @return ** uint8_t 缓冲区的宽度（以图块为单位）。
+     */
     uint8_t getBufferTileWidth(void) { return u8g2_GetBufferTileWidth(&u8g2); }
     uint8_t getPageCurrTileRow(void) { return u8g2_GetBufferCurrTileRow(&u8g2); }	// obsolete
     void setPageCurrTileRow(uint8_t row) { u8g2_SetBufferCurrTileRow(&u8g2, row); }	// obsolete
+
+    /**
+     * @brief 返回目标显示器上像素缓冲区（页面）的内容的预期位置。如果假定缓冲区将放置在显示器的顶部，则该值为零。此值由改性FIRSTPAGE /下一页 和使用sendBuffer到像素缓冲器的在目标位置处的内容放置。
+     * 
+     * @return ** uint8_t 当前页面位置（以图块为单位）（一个图块的高度为8像素）
+     */
     uint8_t getBufferCurrTileRow(void) { return u8g2_GetBufferCurrTileRow(&u8g2); }
+
+    /**
+     * @brief 设置sendBuffer命令的像素缓冲区的位置，还设置所有图形命令写入的区域。
+     * 
+     * @param row 显示屏上像素缓冲区的位置。row是“平铺”位置，必须乘以8才能获得像素位置。
+     * @return ** void 
+     */
     void setBufferCurrTileRow(uint8_t row) { u8g2_SetBufferCurrTileRow(&u8g2, row); }
     
     // this should be renamed to setBufferAutoClear
+
+    /**
+     * @brief 通过firstPage和nextPage过程启用（mode = 1）或禁用（mode = 0）自动清除像素缓冲区。默认情况下启用此功能，并且在大多数情况下不需要禁用此功能。如果禁用，则用户负责将当前像素缓冲区的ALL像素设置为某个合适的状态。可以使用clearBuffer 过程手动擦除该缓冲区。使用此功能的一个应用是通过直接操作像素缓冲区手动渲染背景的情况（请参见DirectAccess.ino示例）。
+     * 
+     * @param mode 0，关闭自动清除内部像素缓冲区的功能。预设值为1。
+     * @return ** void 
+     */
     void setAutoPageClear(uint8_t mode)  { u8g2_SetAutoPageClear(&u8g2, mode); }
     
+    /**
+     * @brief 更新显示的全部或指定的矩形区域。成员updateDisplay()函数与几乎相同sendBuffer()。成员函数updateDisplayArea()将更新指定的矩形区域：仅将指定区域从内部缓冲区复制到显示器。该区域必须以图块指定。一个图块是8x8像素区域。要获得像素值，请将图块值乘以8（代表U8G2_R0）。切片坐标独立于U8g2构造函数中应用的旋转，但方向与相同U8G2_R0。对于其他旋转，像素值块位置之间的计算更加复杂。三个成员函数sendBuffer，updateDisplay以及updateDisplayArea 被设计用于全缓冲模式（构造与_F_在名称）。然而sendBuffer并且updateDisplay也可以在页面模式下使用。如果updateDisplay与ePaper显示器一起使用，请确保将正确的刷新顺序发送到显示器。之间的差异发送刷新显示消息--否;在全缓冲模式下工作--是;在页面缓冲模式下工作--否;updateDisplayArea()会不会对以下控制器充分工作：SH1122，LD7032，ST7920，ST7986，LC7981，T6963，SED1330，RA8835，MAX7219，LS0xx
+     * 
+     * @param tx 区域的左上角X位置，以图块位置给出。
+     * @param ty 区域的左上角y位置，以图块位置给出。
+     * @param tw 区域中瓷砖的宽度。
+     * @param th 区域中瓷砖的高度。
+     * @return ** void 
+     */
     void updateDisplayArea(uint8_t  tx, uint8_t ty, uint8_t tw, uint8_t th)
       { u8g2_UpdateDisplayArea(&u8g2, tx, ty, tw, th); }
+    /**
+     * @brief 更新显示的全部或指定的矩形区域。成员updateDisplay()函数与几乎相同sendBuffer()。成员函数updateDisplayArea()将更新指定的矩形区域：仅将指定区域从内部缓冲区复制到显示器。该区域必须以图块指定。一个图块是8x8像素区域。要获得像素值，请将图块值乘以8（代表U8G2_R0）。切片坐标独立于U8g2构造函数中应用的旋转，但方向与相同U8G2_R0。对于其他旋转，像素值块位置之间的计算更加复杂。三个成员函数sendBuffer，updateDisplay以及updateDisplayArea 被设计用于全缓冲模式（构造与_F_在名称）。然而sendBuffer并且updateDisplay也可以在页面模式下使用。如果updateDisplay与ePaper显示器一起使用，请确保将正确的刷新顺序发送到显示器。之间的差异发送刷新显示消息--否;在全缓冲模式下工作--是;在页面缓冲模式下工作--是;updateDisplay()适用于所有显示控制器。
+     * 
+     * @return ** void 
+     */
     void updateDisplay(void)
       { u8g2_UpdateDisplay(&u8g2); }
     void refreshDisplay(void)
@@ -248,6 +360,13 @@ class U8G2 : public Print
 
 
     /* clib/u8g2.hvline.c */
+
+    /**
+     * @brief 定义所有绘图功能的位值（颜色索引）。所有绘图功能都会将显示存储器更改为该位值。默认值为1。例如，drawBox过程会将定义区域的所有像素设置为此处提供的位值。在v2.11中，新的颜色值2将激活XOR模式。例外情况：clear，clearBuffer：两个函数始终将缓冲区设置为像素值0。的color参数将setDrawColor被忽略。drawGlyph：所有字体绘制过程都将使用此color参数作为前景色。在非透明（纯色）模式（setFontMode）中，颜色值的补码将是背景色，并且将颜色值2设置为0（但是，建议不要将纯色和XOR模式一起使用）：
+     * 
+     * @param color_index 0（显示RAM中的清晰像素值），1（设置像素值）或2（XOR模式）
+     * @return ** void 
+     */
     void setDrawColor(uint8_t color_index) { u8g2_SetDrawColor(&u8g2, color_index); }
     uint8_t getDrawColor(void) { return u8g2_GetDrawColor(&u8g2); }
 
@@ -382,6 +501,13 @@ class U8G2 : public Print
       { u8g2_DrawLine(&u8g2, x1, y1, x2, y2); }
 
     /* u8g2_bitmap.c */
+
+    /**
+     * @brief 定义位图函数是否写入背景色（模式0 / solid，is_transparent = 0）或不写入背景颜色（模式1 / transparent，is_transparent = 1）。默认模式为0（固定模式）。
+     * 
+     * @param is_transparent 启用（1）或禁用（0）透明模式。
+     * @return ** void 
+     */
     void setBitmapMode(uint8_t is_transparent) 
       { u8g2_SetBitmapMode(&u8g2, is_transparent); }
 
@@ -446,13 +572,28 @@ class U8G2 : public Print
     
     /* u8g2_font.c */
     /**
-     * @brief 设置字体
+     * @brief 为字形和字符串绘图功能定义u8g2字体。注意：不能使用u8x8字体。
      * 
      * @param font 所有字体请查询:https://github.com/olikraus/u8g2/wiki/fntlistall
      * @return ** void 
      */
     void setFont(const uint8_t  *font) {u8g2_SetFont(&u8g2, font); }
+
+    /**
+     * @brief 定义字形和字符串绘图函数是否将写入背景色（模式0 / solid，is_transparent = 0）或不写入背景颜色（模式1 / transparent，is_transparent = 1）。默认模式为0（字符的背景颜色被覆盖）。
+
+     * 
+     * @param is_transparent 启用（1）或禁用（0）透明模式。
+     * @return ** void 
+     */
     void setFontMode(uint8_t  is_transparent) {u8g2_SetFontMode(&u8g2, is_transparent); }
+
+    /**
+     * @brief 参数定义所有字符串或字形的绘制方向。
+     * 
+     * @param dir 写入方向/字符串旋转。0,0度,左到右;1,90度上到下;2,180度,右到左;3,270度,下到上;
+     * @return ** void 
+     */
     void setFontDirection(uint8_t dir) {u8g2_SetFontDirection(&u8g2, dir); }
 
     /**
@@ -469,13 +610,53 @@ class U8G2 : public Print
      */
     int8_t getDescent(void) { return u8g2_GetDescent(&u8g2); }
     
+    /**
+     * @brief 更改字形和字符串绘制功能的参考位置。默认情况下，参考位置为“基线”。
+     * 
+     * @return ** void 
+     */
     void setFontPosBaseline(void) { u8g2_SetFontPosBaseline(&u8g2); }
+
+    /**
+     * @brief 更改字形和字符串绘制功能的参考位置。默认情况下，参考位置为“基线”。
+     * 
+     * @return ** void 
+     */
     void setFontPosBottom(void) { u8g2_SetFontPosBottom(&u8g2); }
+
+    /**
+     * @brief 更改字形和字符串绘制功能的参考位置。默认情况下，参考位置为“基线”。
+     * 
+     * @return ** void 
+     */
     void setFontPosTop(void) { u8g2_SetFontPosTop(&u8g2); }
+
+    /**
+     * @brief 更改字形和字符串绘制功能的参考位置。默认情况下，参考位置为“基线”。
+     * 
+     * @return ** void 
+     */
     void setFontPosCenter(void) { u8g2_SetFontPosCenter(&u8g2); }
 
+    /**
+     * @brief 调用这些过程之一将定义当前字体的上升和下降的计算方法。此方法将用于当前字体和所有其他字体，这些字体将通过设置setFont()。更改此计算方法会对getAscent()和产生影响getDescent()。默认值为setFontRefHeightText()。上升将是当前字体的“ A”或“ 1”的上升。下降将是当前字体的下降“ g”（这是启动后的默认设置）。
+     * 
+     * @return ** void 
+     */
     void setFontRefHeightText(void) { u8g2_SetFontRefHeightText(&u8g2); }
+
+    /**
+     * @brief 调用这些过程之一将定义当前字体的上升和下降的计算方法。此方法将用于当前字体和所有其他字体，这些字体将通过设置setFont()。更改此计算方法会对getAscent()和产生影响getDescent()。默认值为setFontRefHeightText()。上升是当前字体的“ A”，“ 1”或“（”的最大上升。下降是当前字体的“ g”或“（”的下降。
+     * 
+     * @return ** void 
+     */
     void setFontRefHeightExtendedText(void) { u8g2_SetFontRefHeightExtendedText(&u8g2); }
+
+    /**
+     * @brief 调用这些过程之一将定义当前字体的上升和下降的计算方法。此方法将用于当前字体和所有其他字体，这些字体将通过设置setFont()。更改此计算方法会对getAscent()和产生影响getDescent()。默认值为setFontRefHeightText()。上升将是当前字体的所有字形中的最高上升。下降将是当前字体的所有字形中的最高下降。
+     * 
+     * @return ** void 
+     */
     void setFontRefHeightAll(void) { u8g2_SetFontRefHeightAll(&u8g2); }
     
 
@@ -539,11 +720,39 @@ u8g2_uint_t u8g2_GetUTF8Width(u8g2_t *u8g2, const char *str);
 	
     /* screenshot functions for full buffer mode */
     /* vertical top lsb memory architecture */
+
+    /**
+     * @brief 将u8g2缓冲区的内容写入指定的对象（Arduino / C ++）或回调函数（普通C接口）。此功能可用于实现屏幕截图/屏幕截图功能。输出格式为XBM或 PBM。两种格式都是纯ASCII图像描述：如果将图像写入目标终端（例如Arduino IDE的串行监视器），只需将输出复制到扩展名为“ .xbm”或“ .pbm”的文本文件中。此命令将内容写入当前内存。要获得输出，必须在全缓冲模式下使用完整的显示图像U8G2（带有的构造函数_F_，另请参见sendbuffer）。有两种内部存储器架构。根据控制器类型，需要不同的屏幕截图过程：下面未提及的所有其他控制器
+     * 
+     * @param p 从Arduino Print类派生的对象（例如，“ Serial”，用于输出到Arduino串行监视器）。
+     * @return ** void 
+     */
     void writeBufferPBM(Print &p);
+
+    /**
+     * @brief 将u8g2缓冲区的内容写入指定的对象（Arduino / C ++）或回调函数（普通C接口）。此功能可用于实现屏幕截图/屏幕截图功能。输出格式为XBM或 PBM。两种格式都是纯ASCII图像描述：如果将图像写入目标终端（例如Arduino IDE的串行监视器），只需将输出复制到扩展名为“ .xbm”或“ .pbm”的文本文件中。此命令将内容写入当前内存。要获得输出，必须在全缓冲模式下使用完整的显示图像U8G2（带有的构造函数_F_，另请参见sendbuffer）。有两种内部存储器架构。根据控制器类型，需要不同的屏幕截图过程：下面未提及的所有其他控制器
+     * 
+     * @param p 从Arduino Print类派生的对象（例如，“ Serial”，用于输出到Arduino串行监视器）。
+     * @return ** void 
+     */
     void writeBufferXBM(Print &p);
     /* horizontal right lsb memory architecture */
     /* SH1122, LD7032, ST7920, ST7986, LC7981, T6963, SED1330, RA8835, MAX7219, LS0 */ 
+    
+    /**
+     * @brief 将u8g2缓冲区的内容写入指定的对象（Arduino / C ++）或回调函数（普通C接口）。此功能可用于实现屏幕截图/屏幕截图功能。输出格式为XBM或 PBM。两种格式都是纯ASCII图像描述：如果将图像写入目标终端（例如Arduino IDE的串行监视器），只需将输出复制到扩展名为“ .xbm”或“ .pbm”的文本文件中。此命令将内容写入当前内存。要获得输出，必须在全缓冲模式下使用完整的显示图像U8G2（带有的构造函数_F_，另请参见sendbuffer）。有两种内部存储器架构。根据控制器类型，需要不同的屏幕截图过程：SH1122，LD7032，ST7920，ST7986，LC7981，T6963，SED1330，RA8835，MAX7219，LS0xx
+     * 
+     * @param p 从Arduino Print类派生的对象（例如，“ Serial”，用于输出到Arduino串行监视器）。
+     * @return ** void 
+     */
     void writeBufferPBM2(Print &p);
+
+    /**
+     * @brief 将u8g2缓冲区的内容写入指定的对象（Arduino / C ++）或回调函数（普通C接口）。此功能可用于实现屏幕截图/屏幕截图功能。输出格式为XBM或 PBM。两种格式都是纯ASCII图像描述：如果将图像写入目标终端（例如Arduino IDE的串行监视器），只需将输出复制到扩展名为“ .xbm”或“ .pbm”的文本文件中。此命令将内容写入当前内存。要获得输出，必须在全缓冲模式下使用完整的显示图像U8G2（带有的构造函数_F_，另请参见sendbuffer）。有两种内部存储器架构。根据控制器类型，需要不同的屏幕截图过程：SH1122，LD7032，ST7920，ST7986，LC7981，T6963，SED1330，RA8835，MAX7219，LS0xx
+     * 
+     * @param p 从Arduino Print类派生的对象（例如，“ Serial”，用于输出到Arduino串行监视器）。
+     * @return ** void 
+     */
     void writeBufferXBM2(Print &p);
 
     /* virtual function for print base class */    
@@ -602,10 +811,40 @@ uint8_t u8g2_UserInterfaceMessage(u8g2_t *u8g2, const char *title1, const char *
 uint8_t u8g2_UserInterfaceInputValue(u8g2_t *u8g2, const char *title, const char *pre, uint8_t *value, uint8_t lo, uint8_t hi, uint8_t digits, const char *post);
 */
 
+    /**
+     * @brief 显示可滚动和可选选项的列表。用户可以选择一个选项。
+     * 
+     * @param title 表头
+     * @param start_pos 元素，该元素首先突出显示（从1开始）。
+     * @param sl 选项列表，每行一个（行之间必须用分隔\n）。
+     * @return ** uint8_t 1至n（如果已选择按钮之一）。如果用户按下了主页/取消按钮，则为0。
+     */
     uint8_t userInterfaceSelectionList(const char *title, uint8_t start_pos, const char *sl) {
       return u8g2_UserInterfaceSelectionList(&u8g2, title, start_pos, sl); }
+    
+    /**
+     * @brief 显示消息文本并等待用户输入。用户可以按一个按钮或在两个或多个按钮之间选择。
+     * 
+     * @param title1 第一个多行描述（行之间必须用分隔\n）。
+     * @param title2 第二个单行描述（画一条线直到第一个\n或第二个\0）。
+     * @param title3 第三个多行描述（行之间必须用分隔\n）。
+     * @param buttons 一个或多个按钮，用分隔\n。
+     * @return ** uint8_t  1至n（如果已选择按钮之一）。如果用户按下了主页/取消按钮，则为0。
+     */
     uint8_t userInterfaceMessage(const char *title1, const char *title2, const char *title3, const char *buttons) {
       return u8g2_UserInterfaceMessage(&u8g2, title1, title2, title3, buttons); }
+    /**
+     * @brief 请求输入8位值。所有显示输出和按键处理均在此功能内完成。
+     * 
+     * @param title 值的多行说明（行必须用分隔\n）。
+     * @param pre 之前的文字value。
+     * @param value 指向变量的指针，该变量将由用户输入填充。
+     * @param lo 最低值，可由用户选择。
+     * @param hi 最高值，可由用户选择。
+     * @param digits 位数（1到3）。
+     * @param post value后的文本
+     * @return ** uint8_t 1，如果用户已按下选择按钮。如果用户按下了主页/取消按钮，则为0。value仅当用户按下选择键时，所选值才会存储在其中。
+     */
     uint8_t userInterfaceInputValue(const char *title, const char *pre, uint8_t *value, uint8_t lo, uint8_t hi, uint8_t digits, const char *post) {
       return u8g2_UserInterfaceInputValue(&u8g2, title, pre, value, lo, hi, digits, post); }
     
@@ -619,8 +858,17 @@ uint8_t u8g2_UserInterfaceInputValue(u8g2_t *u8g2, const char *title, const char
       */
     void home(void) { tx = 0; ty = 0;  u8x8_utf8_init(u8g2_GetU8x8(&u8g2)); }
     void clear(void) { home(); clearDisplay(); clearBuffer();  }
+    
     void noDisplay(void) { u8g2_SetPowerSave(&u8g2, 1); }
     void display(void) { u8g2_SetPowerSave(&u8g2, 0); }
+
+    /**
+     * @brief 为打印功能定义光标。打印 功能的任何输出都将从该位置开始
+     * 
+     * @param x 打印功能光标的像素x位置
+     * @param y 打印功能光标的像素y位置
+     * @return ** void 
+     */
     void setCursor(u8g2_uint_t x, u8g2_uint_t y) { tx = x; ty = y; }
  
     /* u8glib compatible functions */
